@@ -1,0 +1,8 @@
+# 排除所有层级下的 build 文件夹
+build/
+bin/
+obj/
+
+# 排除缓存和日志
+.cache/
+*.log
