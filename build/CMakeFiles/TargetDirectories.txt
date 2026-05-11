@@ -1,3 +1,0 @@
-/home/io/fpy/task/io_gripper_sdk/build/CMakeFiles/sdk_test.dir
-/home/io/fpy/task/io_gripper_sdk/build/CMakeFiles/edit_cache.dir
-/home/io/fpy/task/io_gripper_sdk/build/CMakeFiles/rebuild_cache.dir
