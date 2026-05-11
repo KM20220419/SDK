@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,-rpath,'$ORIGIN/lib' CMakeFiles/sdk_test.dir/main.cpp.o -o sdk_test   -L/home/io/fpy/task/io_gripper_sdk/lib  -Wl,-rpath,/home/io/fpy/task/io_gripper_sdk/lib -lio_gripper -lyaml-cpp 

@@ -1,25 +1,19 @@
 # IO Gripper SDK
 
-飞特机械夹爪 C++ SDK 文档
-
-**日期**: 2026.4.15  
-**作者**:
-
 ## 概述
 
 IO Gripper SDK 是一个基于 SCServo 协议的机械夹爪驱动库，提供完整的夹爪控制、状态读取和高级功能接口。
 
 ## 主要功能
 
-- **连接管理**: 支持串口连接、断开和设备扫描
-- **力控制**: 扭矩使能、力限制设置
-- **位置控制**: 支持原始脉冲值和弧度制控制
-- **速度控制**: 支持多种速度设置方式
-- **状态监测**: 实时读取位置、速度、电流、温度等参数
-- **同步控制**: 支持多舵机同步动作
-- **标定功能**: 自动标定最大/最小开口宽度
-- **轮询机制**: 后台轮询更新状态
-- **故障处理**: 紧急停止、故障清除
+- **连接管理**: 支持串口连接、断开和设备扫描。
+- **力控制**: 扭矩使能、力限制设置。
+- **位置控制**: 支持原始脉冲值和弧度值控制。
+- **速度控制**: 支持多种速度设置方式。
+- **状态监测**: 实时读取位置、速度、电流、温度等参数。
+- **标定功能**: 自动标定最大/最小开口宽度。
+- **轮询机制**: 后台轮询更新状态。
+- **故障处理**: 紧急停止、故障清除。
 
 ## 核心类和结构体
 
@@ -61,20 +55,9 @@ device_info:
 
 **修改建议**:
 
-- `port`: 上面的port大概率不用修改。
-- `servo_id`: 舵机id
-- `recommended_baudrate`: 常用值115200, 128000
-
-##### capabilities - 功能特性
-
-```yaml
-capabilities:
-  supports_sync_write: true # 是否支持同步写入
-  supports_sync_read: false # 是否支持同步读取
-  supports_present_current: true # 是否支持电流读取
-```
-
-**说明**: 根据实际硬件能力配置，一般无需修改。
+- `port`: 通常情况不需要修改。
+- `servo_id`: 舵机id，默认值为1。
+- `recommended_baudrate`: 常用值115200, 128000。
 
 ##### safety_limits - 安全限制
 
@@ -90,16 +73,16 @@ safety_limits:
 
 **修改建议**:
 
-- 根据实际工作环境调整温度和电压限制以及速度上限
-- `start_power`: 默认为8,值越大会抖动
-- `release_torque_on_disconnect`: 为 `true` 或者 `false`
+- 根据实际工作环境调整温度和电压限制以及速度上限。
+- `start_power`: 默认为8，值越大会抖动。
+- `release_torque_on_disconnect`: 为 `true` 或者 `false`。
 
 ##### calibration - 标定参数
 
 ```yaml
 calibration:
-  calib_max_position_raw: 2742 # 基准最大位置原始值（脉冲数）
-  calib_min_position_raw: 2293 # 基准最小位置原始值（脉冲数）
+  calib_max_position_raw: 2742 # 基准最大位置原始值
+  calib_min_position_raw: 2293 # 基准最小位置原始值
   calib_max_width_mm: 100.0 # 基准最大开口宽度（毫米）
   calib_min_width_mm: 0.0 # 基准最小开口宽度（毫米）
 ```
@@ -107,10 +90,10 @@ calibration:
 **修改建议**:
 
 - 首次使用运行 `calibrate()` 自动获取calib_max_position_raw，calib_min_position_raw并写入配置文件。
-- calib_max_width_mm，calib_min_width_mm需要物理测量实际开口宽度
-- 这些参数用于位置到宽度的线性映射，这些参数作为基准不可随意修改,
+- calib_max_width_mm，calib_min_width_mm需要物理测量实际开口宽度。
+- 标定参数用于位置到宽度的线性映射，这些参数作为基准不可随意修改。
 
-#### 2. gripper（夹爪语义控制参数）
+#### 2. Gripper（夹爪语义控制参数）
 
 ```yaml
 gripper:
@@ -125,68 +108,72 @@ gripper:
 
 **修改建议**:
 
-- `use_width_mm`: `true` 使用宽度控制，`false` 则不使用该方式控制
-- `use_normalized_opening`: `true` 使用归一化控制，`false` 则不使用该方式控制
-- `max_effort`: 根据产品需求调整 输入范围0 - 1 ，最大表示1000
-- `speed`: 运动速度，输入范围0 - 1 最大为之前设置的最大速度
+- `use_width_mm`: `true` 表示使用毫米单位宽度控制，`false` 表示不使用该方式控制。
+- `use_normalized_opening`: `true` 表示使用归一化开口控制，`false` 表示不使用该方式控制。
+- `max_effort`: 根据产品需求调整，输入范围 0 - 1 ，输入 1 表示最大力。
+- `speed`: 运动速度，输入范围 0 - 1 ，输入 1 表示最大速度。
 
 
 ## API 参考
 
 ### 连接控制
 
-- `bool connect()` - 连接设备
-- `void disconnect()` - 断开连接
+- `bool connect()` - 连接设备。
+- `void disconnect()` - 断开连接。
 
 ### 设备管理
 
-- `bool ping(uint8_t servo_id)` - ping设备是否在线
-- `std::vector<uint8_t> scanIds(uint8_t start, uint8_t end)` - 扫描设备，检查哪些id在线
-- `bool initialize(const std::vector<uint8_t> &servo_ids)` - 初始化一组id
+- `bool ping(uint8_t servo_id)` - ping设备是否在线。
+- `std::vector<uint8_t> scanIds(uint8_t start, uint8_t end)` - 扫描设备，检查哪些id在线。
+- `bool initialize(const std::vector<uint8_t> &servo_ids)` - 初始化一组id。
 
 ### 扭矩控制
 
-- `bool enableTorque(uint8_t servo_id)` - 启用扭矩
-- `bool disableTorque(uint8_t servo_id)` - 禁用扭矩
+- `bool enableTorque(uint8_t servo_id)` - 启用扭矩。
+- `bool disableTorque(uint8_t servo_id)` - 禁用扭矩。
 
 ### 运动控制
 
-- `bool commandPosition()` - 位置控制
-- `bool commandVelocity()` - 速度控制
-- `bool commandGripper()` - 夹爪语义控制
-- `bool syncMove()` - 同步移动
+- `bool commandPosition()` - 位置控制。
+- `bool commandVelocity()` - 速度控制。
+- `bool commandGripper()` - 夹爪语义控制。
+- `bool syncMove()` - 同步移动。
 
 ### 状态查询
 
-- `GripperState readState(uint8_t servo_id)` - 读取单个状态
-- `std::vector<GripperState> readGroupState()` - 读取多个状态
-- `GripperState getCachedState()` - 获取缓存的状态（开启轮询后）
-- `uint16_t getminpos()` - 获取目前的最小限位
-- `uint16_t getmaxpos()` - 获取目前的最大限位
-- `uint16_t getcurrentpos()` - 获取当前位置
-- `float getmaxpos_rad()` - 获取可输入的最大位置弧度
-- `flaot getspeed_max_rad()` - 获取可输入的最大速度（rad/s）
+- `GripperState readState(uint8_t servo_id)` - 读取单个状态。
+- `std::vector<GripperState> readGroupState()` - 读取多个状态。
+- `GripperState getCachedState()` - 获取缓存的状态（开启轮询后）。
+- `uint16_t getminpos()` - 获取目前的最小限位。
+- `uint16_t getmaxpos()` - 获取目前的最大限位。
+- `uint16_t getcurrentpos()` - 获取当前位置。
+- `float getmaxpos_rad()` - 获取可输入的最大位置弧度。
+- `float getspeed_max_rad()` - 获取可输入的最大速度（rad/s）。
 
 ### 高级功能
 
-- `void startPolling()` - 启动后台轮询
-- `void stopPolling()` - 停止轮询
-- `bool calibrate()` - 标定 在将标定结果写入文件后，之后启动不用再次标定 前提：基准限位结果没变
-- `bool clearFault()` - 清除故障
-- `void emergencyStop()` - 紧急停止
+- `void startPolling()` - 启动后台轮询。
+- `void stopPolling()` - 停止轮询。
+- `bool calibrate()` - 标定（如果基准限位结果没有发生变化，标定完成之后启动无需再次标定）。
+- `bool clearFault()` - 清除故障。
+- `void emergencyStop()` - 紧急停止。 
 
 ## 常见问题
 
 **Q: 如何找到正确的串口？**  
-A: 使用命令 `ls /dev/ttyUSB*` 或 `ls /dev/serial/by-id/` 查看
+A: 使用命令 `ls /dev/ttyUSB*` 或 `ls /dev/serial/by-id/` 查看。
 
 **Q: 出现：启动失败: bad file: gripper_config.yaml**  
-A: 找不到配置文件，确保路径正确
+A: 找不到配置文件，请检查配置文件路径是否正确。
 
 **Q: 如何调整夹爪力度？**  
-A: 修改配置文件中的 `max_effort` 或通过 `setEffortLimit()` API 动态调整
+A: 修改配置文件中的 `max_effort` 或通过 `setEffortLimit()` API 动态调整。
 
 ## 编译依赖
+
+- 系统要求：Linux 22.04。
+
+- 此版本暂不支持 arm 架构开发板。
 
 - 系统库安装 yaml-cpp：执行 sudo apt-get install libyaml-cpp-dev。
 
@@ -207,3 +194,5 @@ mkdir build && cd build
 cmake ..
 make
 ./sdk_test
+
+*如需获取其它兼容性选项支持，请联系我们。*
