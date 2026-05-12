@@ -171,7 +171,7 @@ A: 修改配置文件中的 `max_effort` 或通过 `setEffortLimit()` API 动态
 
 ## 编译依赖
 
-- 系统要求：Linux 22.04。
+- 系统要求：Linux: Ubuntu 22.04。
 
 - 此版本暂不支持 arm 架构开发板。
 
