@@ -16,7 +16,7 @@ DeviceProfile:
     start_power: 8
     release_torque_on_disconnect: true
   calibration:
-    calib_max_position_raw: 2744
+    calib_max_position_raw: 2742
     calib_min_position_raw: 2293
     calib_max_width_mm: 100.0
     calib_min_width_mm: 0.0
@@ -24,7 +24,7 @@ gripper:
   use_width_normalized:
     use_width_mm: true
     use_normalized_opening: false
-    width_mm: 10.0
+    width_mm: 80.0
     normalized_opening: 0.1
     max_effort: 0.15
     speed: 0.5

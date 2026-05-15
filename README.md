@@ -4,6 +4,22 @@
 
 IO Gripper SDK 是一个基于 SCServo 协议的机械夹爪驱动库，提供完整的夹爪控制、状态读取和高级功能接口。
 
+
+## 编译依赖
+
+- 系统要求：Linux: Ubuntu 22.04。
+
+- 此版本暂不支持 arm 架构开发板。
+
+- 系统库安装 yaml-cpp：执行 sudo apt-get install libyaml-cpp-dev
+
+- 编译器：支持 C++17 或更高版本。
+
+- 头文件：请确保将本 SDK 提供的 include/ 目录加入到项目的包含路径中。
+
+- 库链接：在编译时链接 libio_gripper.so。
+
+
 ## 主要功能
 
 - **连接管理**: 支持串口连接、断开和设备扫描。
@@ -161,7 +177,15 @@ gripper:
 ## 常见问题
 
 **Q: 如何找到正确的串口？**  
-A: 使用命令 `ls /dev/ttyUSB*` 或 `ls /dev/serial/by-id/` 查看。
+A: 使用命令 `sudo ls /dev/ttyUSB*` 或 `sudo ls /dev/serial/by-id/` 查看。
+
+**Q: 使用命令 `sudo ls /dev/ttyUSB*` 或者运行demo时终端显示没有那个文件或者目录**  
+A: 确保USB线连接正确
+B: 可能是 Ubuntu系统中的 brltty 包占用了串口，通过`dpkg -l | grep brltty`来查看系统中是否存在改包。brltty是用来支持盲文设备的,如果不需要可以删除
+   删除方式：
+          `sudo apt remove --purge brltty`   # 删除 brltty 包以及相关配置
+          `sudo apt autoremove`              # 清理系统残留
+          `dpkg -l | grep brltty`            #验证brltty 是否已被删除
 
 **Q: 出现：启动失败: bad file: gripper_config.yaml**  
 A: 找不到配置文件，请检查配置文件路径是否正确。
@@ -169,27 +193,13 @@ A: 找不到配置文件，请检查配置文件路径是否正确。
 **Q: 如何调整夹爪力度？**  
 A: 修改配置文件中的 `max_effort` 或通过 `setEffortLimit()` API 动态调整。
 
-## 编译依赖
-
-- 系统要求：Linux: Ubuntu 22.04。
-
-- 此版本暂不支持 arm 架构开发板。
-
-- 系统库安装 yaml-cpp：执行 sudo apt-get install libyaml-cpp-dev。
-
-- 编译器：支持 C++17 或更高版本。
-
-- 头文件：请确保将本 SDK 提供的 include/ 目录加入到项目的包含路径中。
-
-- 库链接：在编译时链接 libio_gripper.so。
-
-
 ## 加载配置文件示例
 
 - 提供使用示例
 - 提供CMake编译
 
 ### CMake编译使用方法
+
 mkdir build && cd build
 cmake ..
 make
