@@ -11,7 +11,7 @@ struct GripperContext {
   DeviceProfile profile;
 };
 
-GripperContext create_gripper_driver(const std::string& config_file_path) {
+DeviceProfile create_gripper_driver(const std::string& config_file_path) {
   DeviceProfile profile;
   YAML::Node config = YAML::LoadFile(config_file_path);
   auto DeviceProfile_Node = config["DeviceProfile"];
@@ -51,12 +51,13 @@ GripperContext create_gripper_driver(const std::string& config_file_path) {
   profile.calib_min_width_mm =
       DeviceProfile_Node["calibration"]["calib_min_width_mm"].as<float>();
 
-  std::string port =
-      DeviceProfile_Node["device_info"]["port"].as<std::string>("/dev/ttyUSB0");
+  //   std::string port =
+  //       DeviceProfile_Node["device_info"]["port"].as<std::string>("/dev/ttyUSB0");
 
-  auto driver_ptr =
-      std::make_unique<GripperDriver>(port, profile, config_file_path);
-  return {std::move(driver_ptr), profile};
+  //   auto driver_ptr =
+  //       std::make_unique<GripperDriver>(port, profile, config_file_path);
+  //   return {std::move(driver_ptr), profile};
+  return profile;
 }
 
 // 用夹爪语义控制
@@ -85,10 +86,22 @@ GripperCommand cmd_gripper_move(std::string config_path) {
 int main() {
   try {
     std::cout << "正在尝试初始化库..." << std::endl;
-    std::string path = "../gripper_config.yaml";
-    auto [driver, profile] = create_gripper_driver(path);
 
-    if (driver->connect()) {
+    // 查找端口
+    std::unique_ptr<find_port> port_;
+    std::vector<CameraInfo> res_caminfo = port_->get_usb_cameras_info();
+    std::string first_need_port = port_->find_by_path_from_tty(
+        port_->resolve_gripper_by_camera_serial(res_caminfo[0].serial));
+
+    std::cout << "first_need_port: " << first_need_port << std::endl;
+
+    std::string path = "../gripper_config.yaml";
+
+    // 配置profile文件
+    DeviceProfile profile = create_gripper_driver(path);
+    auto driver =
+        std::make_unique<GripperDriver>(first_need_port, profile, path);
+    if (driver->connect() && driver->ping(profile.servo_id)) {
       driver->initialize({profile.servo_id});
 
       std::cout << "标定" << std::endl;

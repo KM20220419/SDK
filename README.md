@@ -82,7 +82,7 @@ safety_limits:
   min_voltage_v: 4.5 # 最低工作电压（伏特）
   max_voltage_v: 25.4 # 最高工作电压（伏特）
   max_temperature_c: 70.0 # 最高工作温度（摄氏度）
-  max_servo_velocity: 3000 # 最大舵机速度阈值
+  max_servo_velocity: 3000 # 最大舵机速度阈值，因为运行容器时还要映射串口设备
   start_power: 8 # 最小启动力（0-255）
   release_torque_on_disconnect: true # 3次通信失败后是否泄力
 ```
@@ -173,6 +173,10 @@ gripper:
 - `bool calibrate()` - 标定（如果基准限位结果没有发生变化，标定完成之后启动无需再次标定）。
 - `bool clearFault()` - 清除故障。
 - `void emergencyStop()` - 紧急停止。 
+
+### 舵机查询
+- `bool has_servo_id(const std::string& port, int baudrate, int servo_id)`  - 判断某个串口上是否存在指定 ID 的夹爪/舵机
+- `std::optional<std::string> find_port_by_servo_id(int target_id)` - 根据舵机 ID 查找对应串口
 
 ## 常见问题
 
