@@ -89,11 +89,6 @@ struct CameraInfo {
   std::string serial;
 };
 
-// struct DevicePair {
-//   std::string video_dev;
-//   std::string tty_dev;
-// };
-
 class GripperDriver {
  public:
   explicit GripperDriver(std::string port,

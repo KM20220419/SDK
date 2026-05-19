@@ -51,12 +51,6 @@ DeviceProfile create_gripper_driver(const std::string& config_file_path) {
   profile.calib_min_width_mm =
       DeviceProfile_Node["calibration"]["calib_min_width_mm"].as<float>();
 
-  //   std::string port =
-  //       DeviceProfile_Node["device_info"]["port"].as<std::string>("/dev/ttyUSB0");
-
-  //   auto driver_ptr =
-  //       std::make_unique<GripperDriver>(port, profile, config_file_path);
-  //   return {std::move(driver_ptr), profile};
   return profile;
 }
 
@@ -101,13 +95,14 @@ int main() {
     DeviceProfile profile = create_gripper_driver(path);
     auto driver =
         std::make_unique<GripperDriver>(first_need_port, profile, path);
+
     if (driver->connect() && driver->ping(profile.servo_id)) {
       driver->initialize({profile.servo_id});
 
       std::cout << "标定" << std::endl;
       driver->calibrate();
 
-      // 动态加载配置文件，使用夹爪语义
+      // 加载配置文件，使用夹爪语义
       std::cout << "-------" << std::endl;
       driver->commandGripper(cmd_gripper_move(path));
       driver->disconnect();
