@@ -86,10 +86,10 @@ device_info:
 
 ```yaml
 safety_limits:
-  min_voltage_v: 4.5 # 最低工作电压（伏特）
+  min_voltage_v: 4 # 最低工作电压（伏特）
   max_voltage_v: 25.4 # 最高工作电压（伏特）
   max_temperature_c: 70.0 # 最高工作温度（摄氏度）
-  max_servo_velocity: 3000 # 最大舵机速度阈值，因为运行容器时还要映射串口设备
+  max_servo_velocity: 3000 # 最大舵机速度阈值
   start_power: 8 # 最小启动力（0-255）
   release_torque_on_disconnect: true # 3次通信失败后是否泄力
 ```
@@ -141,50 +141,51 @@ gripper:
 
 ### 连接控制
 
-- `bool connect()` - 连接设备。
-- `void disconnect()` - 断开连接。
+- `bool connect()` - 连接设备
+- `void disconnect()` - 断开连接
 
 ### 设备管理
 
-- `bool ping(uint8_t servo_id)` - ping设备是否在线。
-- `std::vector<uint8_t> scanIds(uint8_t start, uint8_t end)` - 扫描设备，检查哪些id在线。
-- `bool initialize(const std::vector<uint8_t> &servo_ids)` - 初始化一组id。
+- `bool ping(uint8_t servo_id)` - 检查设备是否在线
+- `std::vector<uint8_t> scanIds(uint8_t start, uint8_t end)` - 扫描设备，检查哪些id在线
+- `bool initialize(const std::vector<uint8_t> &servo_ids)` - 初始化一组id
 
 ### 扭矩控制
 
-- `bool enableTorque(uint8_t servo_id)` - 启用扭矩。
-- `bool disableTorque(uint8_t servo_id)` - 禁用扭矩。
+- `bool enableTorque(uint8_t servo_id)` - 启用扭矩
+- `bool disableTorque(uint8_t servo_id)` - 释放扭矩
+- `bool setEffortLimit(uint8_t servo_id, std::optional<float> current_limit_mA,std::optional<uint16_t> torque_limit_raw)` - 设置电流以及力矩限制
 
 ### 运动控制
 
-- `bool commandPosition()` - 位置控制。
-- `bool commandVelocity()` - 速度控制。
-- `bool commandGripper()` - 夹爪语义控制。
-- `bool syncMove()` - 同步移动。
+- `bool commandPosition(uint8_t servo_id, std::optional<uint16_t> position_raw,std::optional<float> angle_rad)` 
+  - 位置控制 (没有执行速度控制的情况下，默认速度为600,加速度为100)，支持使用原始位置语义和弧度位置语义控制
+- `bool commandVelocity(uint8_t servo_id, std::optional<uint16_t> velocity_raw,std::optional<float> velocity_rad_s,std::optional<int> move_time_ms)` 
+  - 速度控制，支持使用原始速度语义和弧度/s 的语义控制，最后一个参数填`std::nullopt` 即可
+- `bool commandGripper(const GripperCommand& cmd)` - 夹爪语义控制
+- `void setSoftLimits(float min_width_mm, float max_width_mm)` 设置软限位
+- `bool syncMove()` - 同步移动
 
 ### 状态查询
 
-- `GripperState readState(uint8_t servo_id)` - 读取单个状态。
-- `std::vector<GripperState> readGroupState()` - 读取多个状态。
-- `GripperState getCachedState()` - 获取缓存的状态（开启轮询后）。
-- `uint16_t getminpos()` - 获取目前的最小限位。
-- `uint16_t getmaxpos()` - 获取目前的最大限位。
-- `uint16_t getcurrentpos()` - 获取当前位置。
-- `float getmaxpos_rad()` - 获取可输入的最大位置弧度。
-- `float getspeed_max_rad()` - 获取可输入的最大速度（rad/s）。
+- `GripperState readState(uint8_t servo_id)` - 读取单个舵机状态
+- `std::vector<GripperState> readGroupState(const std::vector<uint8_t>& servo_ids)` - 读取多个舵机状态
+- `GripperState getCachedState()` - 获取缓存的状态（开启轮询后）
+- `uint16_t getminpos()` - 获取目前的最小限位
+- `uint16_t getmaxpos()` - 获取目前的最大限位
+- `uint16_t getcurrentpos()` - 获取当前位置
+- `float getmaxpos_rad()` - 获取可输入的最大位置弧度(rad)
+- `float getspeed_max_rad()` - 获取可输入的最大速度(rad/s)
 
 ### 高级功能
 
-- `void startPolling()` - 启动后台轮询。
-- `void stopPolling()` - 停止轮询。
-- `bool calibrate()` - 标定（如果基准限位结果没有发生变化，标定完成之后启动无需再次标定）。
-- `bool clearFault()` - 清除故障。
-- `void emergencyStop()` - 紧急停止。 
-
-### 舵机查询
-- `bool has_servo_id(const std::string& port, int baudrate, int servo_id)`  - 判断某个串口上是否存在指定 ID 的夹爪/舵机
-- `std::optional<std::string> find_port_by_servo_id(int target_id)` - 根据舵机 ID 查找对应串口
-
+- `void startPolling()` - 启动后台轮询
+- `void stopPolling()` - 停止轮询
+- `bool calibrate()` - 标定（标定一次之后，会将结果写入配置文件的基准限位中。如果没有改变，之后就不用标定）
+- `bool clearFault()` - 清除故障
+- `void emergencyStop(bool release_torque = false)` - 紧急停止，可以选择急停后是否释放扭矩
+- `bool pickObject(uint8_t servo_id, float width_mm,std::optional<float> speed = 0,std::optional<float> effort = 1000,std::optional<int> timeout_ms = std::nullopt)`
+  - 抓取物体，参数为舵机ID，物体宽度，速度(rad/s)，力矩以及超时时间
 
 ### 串口查询
 
@@ -194,15 +195,21 @@ gripper:
 
 ## 常见问题
 **Q: 为什么USB线插到电脑上别的USB口，夹爪连接不了**
+
 A：由于串口随机分配会导致频繁变化，采用通过物理路径（插槽位置）来识别的串口设备
+
 B：如果你更换了插槽位置，记得更新自己传入的串口路径
 
 **Q: 如何找到正确的串口？**  
+
 A: 使用命令 `sudo ls /dev/ttyUSB*` 或 `sudo ls /dev/serial/by-path/` 查看。
+
 B: 使用串口查询API提供的函数查看。
 
-**Q: 使用命令 `sudo ls /dev/ttyUSB*` 或者运行demo时终端显示没有那个文件或者目录**  
+**Q: 使用命令 `sudo ls /dev/ttyUSB*` 或者运行demo时终端显示没有那个文件或者目录** 
+
 A: 确保USB线连接正确
+
 B: 可能是 Ubuntu系统中的 brltty 包占用了串口，通过`dpkg -l | grep brltty`来查看系统中是否存在改包。brltty是Linux系统中专门为盲人和视障用户提供的盲文终端驱动程序,如果不需要可以删除
    删除方式：
           `sudo apt remove --purge brltty`   # 删除 brltty 包以及相关配置
@@ -210,9 +217,11 @@ B: 可能是 Ubuntu系统中的 brltty 包占用了串口，通过`dpkg -l | gre
           `dpkg -l | grep brltty`            #验证brltty 是否已被删除
 
 **Q: 出现：启动失败: bad file: gripper_config.yaml**  
+
 A: 找不到配置文件，请检查配置文件路径是否正确。
 
 **Q: 如何调整夹爪力度？**  
+
 A: 修改配置文件中的 `max_effort` 或通过 `setEffortLimit()` API 动态调整。
 
 ## 加载配置文件示例

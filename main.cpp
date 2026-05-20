@@ -1,15 +1,12 @@
 #include <yaml-cpp/yaml.h>
 
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "include/io_gripper.hpp"
 
 using namespace io::gripper;
-
-struct GripperContext {
-  std::unique_ptr<GripperDriver> driver;
-  DeviceProfile profile;
-};
 
 DeviceProfile create_gripper_driver(const std::string& config_file_path) {
   DeviceProfile profile;
@@ -84,27 +81,47 @@ int main() {
     // 查找端口
     std::unique_ptr<find_port> port_;
     std::vector<CameraInfo> res_caminfo = port_->get_usb_cameras_info();
-    std::string first_need_port = port_->find_by_path_from_tty(
+    std::string first_port = port_->find_by_path_from_tty(
         port_->resolve_gripper_by_camera_serial(res_caminfo[0].serial));
 
-    std::cout << "first_need_port: " << first_need_port << std::endl;
+    std::cout << "first_port: " << first_port << std::endl;
 
     std::string path = "../gripper_config.yaml";
 
     // 配置profile文件
     DeviceProfile profile = create_gripper_driver(path);
-    auto driver =
-        std::make_unique<GripperDriver>(first_need_port, profile, path);
+    auto driver = std::make_unique<GripperDriver>(first_port, profile, path);
 
     if (driver->connect() && driver->ping(profile.servo_id)) {
+      std::cout << "初始化" << std::endl;
       driver->initialize({profile.servo_id});
 
-      std::cout << "标定" << std::endl;
+      std::cout << "执行标定" << std::endl;
       driver->calibrate();
 
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+      std::cout << "位置的最大弧度：" << driver->getmaxpos_rad() << std::endl;
+      std::cout << "速度-位置控制" << std::endl;
+      driver->commandPosition(profile.servo_id, std::nullopt, 0.689);
+
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+      driver->commandVelocity(profile.servo_id, 1000, std::nullopt,
+                              std::nullopt);
+      driver->commandPosition(profile.servo_id, 2700, std::nullopt);
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
       // 加载配置文件，使用夹爪语义
-      std::cout << "-------" << std::endl;
+      std::cout << "---夹爪语义控制---" << std::endl;
       driver->commandGripper(cmd_gripper_move(path));
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+      // 抓取物体
+      std::cout << "----抓取物体----" << std::endl;
+      driver->pickObject(profile.servo_id, 20, 150, 500, 1000);
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
       driver->disconnect();
     }
   } catch (const std::exception& e) {

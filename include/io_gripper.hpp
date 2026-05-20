@@ -10,8 +10,8 @@
 /*
  * io_gripper.hpp
  * 飞特机械夹爪SDK
- * 日期: 2026.4.15
- * 作者: fpy
+ * 日期: 2026
+ * 作者:
  */
 namespace io::gripper {
 
@@ -146,12 +146,6 @@ class GripperDriver {
   uint16_t getcurrentpos();
   float getmaxpos_rad();
   float getspeed_max_rad();
-  //   bool has_servo_id(const std::string& port, int baudrate, int servo_id);
-  //   std::optional<std::string> find_port_by_servo_id(int target_id);
-  //   std::vector<CameraInfo> get_usb_cameras_info();
-  //   std::string resolve_gripper_by_camera_serial(
-  //       const std::string& camera_serial);
-  //   std::string find_by_path_from_tty(const std::string& tty_path);
 
  private:
   class Impl;
