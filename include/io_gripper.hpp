@@ -54,9 +54,9 @@ struct DeviceProfile {
   float calib_min_position_raw;  // 基准最小位置原始值 (单位：脉冲数)
 
   // 相机参数
-  int width = 640;
-  int height = 480;
-  float fps = 25.0;
+  double width = 640;
+  double height = 480;
+  double fps = 25.0;
   int jpeg_quality = 80;
 };
 
