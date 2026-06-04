@@ -2,9 +2,11 @@
 
 #include <unistd.h>
 
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 /*
@@ -50,6 +52,12 @@ struct DeviceProfile {
   float min_position_raw;        // 最小位置原始值 (单位：脉冲数)
   float calib_max_position_raw;  // 基准最大位置原始值 (单位：脉冲数)
   float calib_min_position_raw;  // 基准最小位置原始值 (单位：脉冲数)
+
+  // 相机参数
+  int width = 640;
+  int height = 480;
+  float fps = 25.0;
+  int jpeg_quality = 80;
 };
 
 struct GripperState {
@@ -87,6 +95,20 @@ struct CameraInfo {
   std::string vid;
   std::string pid;
   std::string serial;
+};
+
+struct GripperCompressedImage {
+  uint64_t timestamp_ns = 0;  // SDK 层时间戳，单位 ns
+  uint32_t width = 0;
+  uint32_t height = 0;
+  std::string format = "jpeg";  // 对应 ROS2 CompressedImage 的 format
+  std::vector<uint8_t> data;    // JPEG 压缩后的二进制数据
+};
+
+struct CameraSettings {
+  double width;
+  double height;
+  double fps;
 };
 
 class GripperDriver {
@@ -146,12 +168,6 @@ class GripperDriver {
   uint16_t getcurrentpos();
   float getmaxpos_rad();
   float getspeed_max_rad();
-  //   bool has_servo_id(const std::string& port, int baudrate, int servo_id);
-  //   std::optional<std::string> find_port_by_servo_id(int target_id);
-  //   std::vector<CameraInfo> get_usb_cameras_info();
-  //   std::string resolve_gripper_by_camera_serial(
-  //       const std::string& camera_serial);
-  //   std::string find_by_path_from_tty(const std::string& tty_path);
 
  private:
   class Impl;
@@ -164,6 +180,34 @@ class find_port {
   std::string resolve_gripper_by_camera_serial(
       const std::string& camera_serial);
   std::string find_by_path_from_tty(const std::string& tty_path);
+
+  // 通过相机序列号找到当前 /dev/videoX
+  std::string find_video_by_camera_serial(const std::string& camera_serial);
+
+  // 通过 /dev/videoX 获取物理插槽 ID_PATH
+  std::string get_video_id_path(const std::string& video_path);
+
+  // 通过物理插槽 ID_PATH 找当前 /dev/videoX
+  std::string find_video_by_id_path(const std::string& target_id_path);
+};
+
+class GripperCamera {
+ public:
+  explicit GripperCamera(std::string video_device,
+                         std::optional<DeviceProfile> profile = std::nullopt);
+
+  ~GripperCamera();
+
+  bool open();
+  void close();
+  bool isOpened() const;
+
+  bool captureCompressedImage(GripperCompressedImage& image);
+  CameraSettings getCameraSettings(const std::string& device_path);
+
+ private:
+  class Impl;
+  std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace io::gripper

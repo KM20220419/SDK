@@ -6,11 +6,11 @@ set(CMAKE_CXX_STANDARD 17)
 # 1. 指定头文件搜索路径
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# 2. 指定库文件搜索路径 
+# 2. 指定库文件搜索路径     
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 # 3. 创建可执行程序
-add_executable(sdk_test main.cpp)
+add_executable(sdk_test main1.cpp)
 
 # 4. 链接动态库
 target_link_libraries(sdk_test io_gripper yaml-cpp)
