@@ -197,7 +197,7 @@ int main() {
 
 ## 使用示例
 
-### 夹爪控制示例 参看main.cpp
+### 夹爪控制示例 参考main.cpp
 
 ```cpp
 // 创建驱动实例
@@ -229,7 +229,7 @@ if (driver.connect()) {
 }
 ```
 
-### 相机使用示例  参考main7.cpp
+### 相机使用示例  参考main1.cpp
 
 ```cpp
 // 创建相机对象
