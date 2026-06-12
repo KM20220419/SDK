@@ -179,7 +179,7 @@ int main() {
     // 设置相机参数
     profile.width = 640;
     profile.height = 480;
-    profile.fps = 25.0;
+    profile.fps = 30.0;
     profile.jpeg_quality = 80;
     
     io::gripper::GripperDriver driver(
