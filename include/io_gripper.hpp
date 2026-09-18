@@ -54,9 +54,9 @@ struct DeviceProfile {
   float calib_min_position_raw;  // 基准最小位置原始值 (单位：脉冲数)
 
   // 相机参数
-  double width = 640;
-  double height = 480;
-  double fps = 25.0;
+  double width = 1280;
+  double height = 720;
+  double fps = 30.0;
   int jpeg_quality = 80;
 };
 
@@ -168,6 +168,10 @@ class GripperDriver {
   uint16_t getcurrentpos();
   float getmaxpos_rad();
   float getspeed_max_rad();
+  int getprotecteffort();
+  int getprotecttime();
+  int getloadeffort();
+  int getcureffort();
 
  private:
   class Impl;
